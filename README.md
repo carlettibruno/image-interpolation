@@ -8,17 +8,17 @@ I'll document more info about it soon.
 
 ### Landmark
 Before running:
-![Dirty Landmark Image](https://raw.githubusercontent.com/carlettibruno/bestway/master/samples/landmark_dirty.png)
+![Dirty Landmark Image](https://raw.githubusercontent.com/carlettibruno/image-interpolation/master/samples/landmark_dirty.png)
 
 After running:
-![Dirty Landmark Image](https://raw.githubusercontent.com/carlettibruno/bestway/master/samples/landmark_interpolated.png)
+![Dirty Landmark Image](https://raw.githubusercontent.com/carlettibruno/image-interpolation/master/samples/landmark_interpolated.png)
 
 ### People (low quality image)
 Before running:
-![Dirty Landmark Image](https://raw.githubusercontent.com/carlettibruno/bestway/master/samples/people_dirty.png)
+![Dirty Landmark Image](https://raw.githubusercontent.com/carlettibruno/image-interpolation/master/samples/people_dirty.png)
 
 After running:
-![Dirty Landmark Image](https://raw.githubusercontent.com/carlettibruno/bestway/master/samples/people_interpolated.png)
+![Dirty Landmark Image](https://raw.githubusercontent.com/carlettibruno/image-interpolation/master/samples/people_interpolated.png)
 
 
 ## Environment
