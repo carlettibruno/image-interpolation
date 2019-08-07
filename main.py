@@ -13,7 +13,7 @@ def run():
     print('copying image...')
     image = image.copy()
 
-    dirty_percent = 50
+    dirty_percent = 200
     pixels = image.shape[0] * image.shape[1]
     dirty = round(pixels * (dirty_percent * 2 / 100))
     print('dirtying image ({}% - total pixels: {} - pixels to dirty: {})...'.format(dirty_percent, pixels, dirty))
@@ -75,7 +75,7 @@ def run():
 
     print('vertical interpolating...')
     for bp in bad_points_v:
-        if bp[3] != '':
+        if bp[3] != '' or qty == image.shape[0] - 1:
             continue
 
         qty = bp[2]
@@ -198,7 +198,7 @@ def process_point(img, y, x, rgb, points, point, width, height, direction, qty):
             qty = 0
     elif point is not None:
         point.append(qty)
-        if point[0] == 0:
+        if point[0] == 0 or point[1] == 0:
             point.append('extra_neg')
         else:
             point.append('')
