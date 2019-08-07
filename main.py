@@ -3,37 +3,38 @@ import matplotlib.image as img
 import image
 import random
 
+
 def run():
     # image = img.imread('./samples/people.jpg')
-    # image = img.imread('./samples/me.jpg')
-    image = img.imread('./samples/landmark.jpg')
+    image = img.imread('./samples/me.jpg')
+    # image = img.imread('./samples/landmark.jpg')
 
     print('copying image...')
     image = image.copy()
 
-    dirty_percent = 50
+    dirty_percent = 100
     pixels = image.shape[0] * image.shape[1]
     dirty = round(pixels * (dirty_percent * 2 / 100))
     print('dirtying image ({}% - total pixels: {} - pixels to dirty: {})...'.format(dirty_percent, pixels, dirty))
     for i in range(dirty):
-        dirty_image(image)  
+        dirty_image(image)
 
     print('getting horizontal bad points...')
-    bad_points_h = get_points(image, [0,0,0], 'h')
+    bad_points_h = get_points(image, [0, 0, 0], 'h')
 
     print('getting vertical bad points...')
-    bad_points_v = get_points(image, [0,0,0], 'v')
-            
+    bad_points_v = get_points(image, [0, 0, 0], 'v')
+
     print('plotting dirty image...')
     fig = plt.figure(2)
     plt.imshow(image)
 
     print('horizontal interpolating...')
     for bp in bad_points_h:
-        if bp[3] != '':
+        qty = bp[2]
+        if bp[3] != '' or qty == image.shape[1] - 1:
             continue
 
-        qty = bp[2]
         y = bp[0]
         x_1 = bp[1] - 1
         x_2 = bp[1] + qty
@@ -85,14 +86,15 @@ def run():
         for i in range(len(interpolation)):
             rgb_h = image[x_1 + 1 + i][y]
             rgb_v = interpolation[i]
-            image[x_1 + 1 + i][y] = [(rgb_h[0] + rgb_v[0])/2,(rgb_h[1] + rgb_v[1])/2,(rgb_h[2] + rgb_v[2])/2]
+            image[x_1 + 1 + i][y] = [(rgb_h[0] + rgb_v[0])/2,
+                                     (rgb_h[1] + rgb_v[1])/2, (rgb_h[2] + rgb_v[2])/2]
 
     for bp in bad_points_v:
         type_oper = bp[3]
+        qty = bp[2]
         if type_oper == '':
             continue
 
-        qty = bp[2]
         y = bp[1]
         x_1 = bp[0] - 1
         x_2 = bp[0] + qty
@@ -111,11 +113,13 @@ def run():
             if type_oper == 'extra_neg':
                 rgb_h = image[x_1 - 1 - i][y]
                 rgb_v = interpolation[i]
-                image[x_1 - 1 - i][y] = [(rgb_h[0] + rgb_v[0])/2,(rgb_h[1] + rgb_v[1])/2,(rgb_h[2] + rgb_v[2])/2]                
+                image[x_1 - 1 - i][y] = [(rgb_h[0] + rgb_v[0])/2,
+                                         (rgb_h[1] + rgb_v[1])/2, (rgb_h[2] + rgb_v[2])/2]
             elif type_oper == 'extra_pos':
                 rgb_h = image[x_2 + 1 + i][y]
                 rgb_v = interpolation[i]
-                image[x_2 + 1 + i][y] = [(rgb_h[0] + rgb_v[0])/2,(rgb_h[1] + rgb_v[1])/2,(rgb_h[2] + rgb_v[2])/2]                
+                image[x_2 + 1 + i][y] = [(rgb_h[0] + rgb_v[0])/2,
+                                         (rgb_h[1] + rgb_v[1])/2, (rgb_h[2] + rgb_v[2])/2]
 
     print('plotting vertical + horizontal interpolated image...')
     fig = plt.figure(3)
@@ -133,7 +137,7 @@ def inter(x_1, y_1, x_2, y_2, qty, type_oper='interp'):
         x = i + x_1 + 1
         if type_oper == 'extra_pos':
             x = i + x_2 + 1
-        if type_oper == 'extra_neg': 
+        if type_oper == 'extra_neg':
             x = x_1 - 1 - i
 
         rgb_h = [0] * 3
@@ -143,11 +147,13 @@ def inter(x_1, y_1, x_2, y_2, qty, type_oper='interp'):
         arr[i] = fix_rgb(rgb_h)
     return arr
 
+
 def fix_rgb(rgb):
     rgb[0] = fix_rgb_color(rgb[0])
     rgb[1] = fix_rgb_color(rgb[1])
     rgb[2] = fix_rgb_color(rgb[2])
     return rgb
+
 
 def fix_rgb_color(color):
     if color > 255:
@@ -156,10 +162,12 @@ def fix_rgb_color(color):
         color = 0
     return color
 
+
 def dirty_image(img):
     """dirty image"""
-    x,y = random.randint(0,img.shape[0]-1), random.randint(0,img.shape[1]-1)
-    img[x,y,:] = 0
+    x, y = random.randint(0, img.shape[0]-1), random.randint(0, img.shape[1]-1)
+    img[x, y, :] = 0
+
 
 def get_points(img, rgb, direction):
     points = []
@@ -171,50 +179,38 @@ def get_points(img, rgb, direction):
     if direction == 'h':
         for y in range(height):
             for x in range(width):
-                if (img[y][x] == rgb).all():
-                    qty += 1
-                    if point is None:
-                        point = [y,x]
-                    if x == width - 1:
-                        point.append(qty)
-                        point.append('extra_pos')
-                        points.append(point)
-                        point = None 
-                        qty = 0 
-                elif point is not None:
-                    point.append(qty)
-                    if point[0] == 0:
-                        point.append('extra_neg')
-                    else:
-                        point.append('')
-                    points.append(point)
-                    point = None
-                    qty = 0
+                point, qty = process_point(img, y, x, rgb, points, point,
+                              width, height, direction, qty)
     else:
         for x in range(width):
             for y in range(height):
-
-                if (img[y][x] == rgb).all():
-                    qty += 1
-                    if point is None:
-                        point = [y,x]
-                    if y == height - 1:
-                        point.append(qty)
-                        point.append('extra_pos')
-                        points.append(point)
-                        point = None 
-                        qty = 0 
-                elif point is not None:
-                    point.append(qty)
-                    if point[0] == 0:
-                        point.append('extra_neg')
-                    else:
-                        point.append('')
-                    points.append(point)
-                    point = None
-                    qty = 0
+                point, qty = process_point(img, y, x, rgb, points, point,
+                              width, height, direction, qty)
 
     return points
 
+
+def process_point(img, y, x, rgb, points, point, width, height, direction, qty):
+    if (img[y][x] == rgb).all():
+        qty += 1
+        if point is None:
+            point = [y, x]
+        if (direction == 'h' and x == width - 1) or (direction == 'v' and y == height - 1):
+            point.append(qty)
+            point.append('extra_pos')
+            points.append(point)
+            point = None
+            qty = 0
+    elif point is not None:
+        point.append(qty)
+        if point[0] == 0:
+            point.append('extra_neg')
+        else:
+            point.append('')
+        points.append(point)
+        point = None
+        qty = 0
+
+    return point, qty
 
 run()
