@@ -12,7 +12,7 @@ def run():
     print('copying image...')
     image = image.copy()
 
-    dirty_percent = 100
+    dirty_percent = 50
     pixels = image.shape[0] * image.shape[1]
     dirty = round(pixels * (dirty_percent * 2 / 100))
     print('dirtying image ({}% - total pixels: {} - pixels to dirty: {})...'.format(dirty_percent, pixels, dirty))
@@ -45,6 +45,7 @@ def run():
         for i in range(len(interpolation)):
             image[y][x_1 + 1 + i] = interpolation[i]
 
+    print('horizontal extrapolating...')
     for bp in bad_points_h:
         type_oper = bp[3]
         if type_oper == '':
@@ -84,11 +85,9 @@ def run():
         y_2 = image[x_2][y]
         interpolation = inter(x_1, y_1, x_2, y_2, qty)
         for i in range(len(interpolation)):
-            rgb_h = image[x_1 + 1 + i][y]
-            rgb_v = interpolation[i]
-            image[x_1 + 1 + i][y] = [(rgb_h[0] + rgb_v[0])/2,
-                                     (rgb_h[1] + rgb_v[1])/2, (rgb_h[2] + rgb_v[2])/2]
+            fill_vertical_value(image, x_1 + 1 + i, y, interpolation[i])
 
+    print('vertical extrapolating...')
     for bp in bad_points_v:
         type_oper = bp[3]
         qty = bp[2]
@@ -111,20 +110,21 @@ def run():
         interpolation = inter(x_1, y_1, x_2, y_2, qty, type_oper)
         for i in range(len(interpolation)):
             if type_oper == 'extra_neg':
-                rgb_h = image[x_1 - 1 - i][y]
-                rgb_v = interpolation[i]
-                image[x_1 - 1 - i][y] = [(rgb_h[0] + rgb_v[0])/2,
-                                         (rgb_h[1] + rgb_v[1])/2, (rgb_h[2] + rgb_v[2])/2]
+                fill_vertical_value(image, x_1 - 1 - i, y, interpolation[i])
             elif type_oper == 'extra_pos':
-                rgb_h = image[x_2 + 1 + i][y]
-                rgb_v = interpolation[i]
-                image[x_2 + 1 + i][y] = [(rgb_h[0] + rgb_v[0])/2,
-                                         (rgb_h[1] + rgb_v[1])/2, (rgb_h[2] + rgb_v[2])/2]
+                fill_vertical_value(image, x_2 + 1 + i, y, interpolation[i])
 
     print('plotting vertical + horizontal interpolated image...')
     fig = plt.figure(3)
     plt.imshow(image)
     plt.show()
+
+
+def fill_vertical_value(image, x, y, interpolation):
+    rgb_h = image[x][y]
+    rgb_v = interpolation
+    image[x][y] = [(rgb_h[0] + rgb_v[0])/2, (rgb_h[1] +
+                                             rgb_v[1])/2, (rgb_h[2] + rgb_v[2])/2]
 
 
 def inter(x_1, y_1, x_2, y_2, qty, type_oper='interp'):
@@ -164,7 +164,6 @@ def fix_rgb_color(color):
 
 
 def dirty_image(img):
-    """dirty image"""
     x, y = random.randint(0, img.shape[0]-1), random.randint(0, img.shape[1]-1)
     img[x, y, :] = 0
 
@@ -172,20 +171,19 @@ def dirty_image(img):
 def get_points(img, rgb, direction):
     points = []
     point = None
-    width = img.shape[1]
-    height = img.shape[0]
+    height, width, ch = img.shape
 
     qty = 0
     if direction == 'h':
         for y in range(height):
             for x in range(width):
                 point, qty = process_point(img, y, x, rgb, points, point,
-                              width, height, direction, qty)
+                                           width, height, direction, qty)
     else:
         for x in range(width):
             for y in range(height):
                 point, qty = process_point(img, y, x, rgb, points, point,
-                              width, height, direction, qty)
+                                           width, height, direction, qty)
 
     return points
 
@@ -212,5 +210,6 @@ def process_point(img, y, x, rgb, points, point, width, height, direction, qty):
         qty = 0
 
     return point, qty
+
 
 run()
