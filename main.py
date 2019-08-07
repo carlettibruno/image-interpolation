@@ -123,9 +123,7 @@ def run():
 def fill_vertical_value(image, x, y, interpolation):
     rgb_h = image[x][y]
     rgb_v = interpolation
-    image[x][y] = [(rgb_h[0] + rgb_v[0])/2, (rgb_h[1] +
-                                             rgb_v[1])/2, (rgb_h[2] + rgb_v[2])/2]
-
+    image[x][y] = (rgb_h + rgb_v)/2
 
 def inter(x_1, y_1, x_2, y_2, qty, type_oper='interp'):
     factor = [0]*3
