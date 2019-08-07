@@ -1,5 +1,6 @@
 import matplotlib.pyplot as plt
 import matplotlib.image as img
+import numpy as np
 import image
 import random
 
@@ -127,9 +128,9 @@ def fill_vertical_value(image, x, y, interpolation):
 
 def inter(x_1, y_1, x_2, y_2, qty, type_oper='interp'):
     factor = [0]*3
-    factor[0] = int(round((int(y_2[0])-int(y_1[0])) / (x_2 - x_1)))
-    factor[1] = int(round((int(y_2[1])-int(y_1[1])) / (x_2 - x_1)))
-    factor[2] = int(round((int(y_2[2])-int(y_1[2])) / (x_2 - x_1)))
+    y_1 = np.asarray(list(map(int, y_1)))
+    y_2 = np.asarray(list(map(int, y_2)))
+    factor = (y_2-y_1) / (x_2 - x_1)
     arr = [None]*qty
     for i in range(qty):
         x = i + x_1 + 1
@@ -139,9 +140,7 @@ def inter(x_1, y_1, x_2, y_2, qty, type_oper='interp'):
             x = x_1 - 1 - i
 
         rgb_h = [0] * 3
-        rgb_h[0] = int(y_1[0]) + factor[0] * (x - x_1)
-        rgb_h[1] = int(y_1[1]) + factor[1] * (x - x_1)
-        rgb_h[2] = int(y_1[2]) + factor[2] * (x - x_1)
+        rgb_h = y_1 + factor * (x - x_1)
         arr[i] = fix_rgb(rgb_h)
     return arr
 
